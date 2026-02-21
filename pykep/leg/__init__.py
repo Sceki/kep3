@@ -13,6 +13,7 @@ from .. import core as _core
 # Ensure original underscored names exist in the module, else pickle will fail
 _sims_flanagan = _core._sims_flanagan
 _sims_flanagan_alpha = _core._sims_flanagan_alpha
+_sims_flanagan_hf = _core._sims_flanagan_hf
 
 # Renaming cpp legs (we need to create an alias first and then 
 # to fool sphinx into thinking these are not aliases, else the sphinx built docs
@@ -24,6 +25,10 @@ sims_flanagan.__module__ = "pykep.leg"
 sims_flanagan_alpha = _core._sims_flanagan_alpha
 sims_flanagan_alpha.__name__ = "sims_flanagan_alpha"
 sims_flanagan_alpha.__module__ = "pykep.leg"
+
+sims_flanagan_hf = _core._sims_flanagan_hf
+sims_flanagan_hf.__name__ = "sims_flanagan_hf"
+sims_flanagan_hf.__module__ = "pykep.leg"
 
 # Removing core from the list of imported symbols.
 del _core

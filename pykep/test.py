@@ -480,6 +480,7 @@ def run_test_suite():
     suite.addTest(tl.loadTestsFromTestCase(planet_test))
     suite.addTest(tl.loadTestsFromTestCase(propagate_test))
     suite.addTest(tl.loadTestsFromTestCase(leg_sims_flanagan_test))
+    suite.addTest(tl.loadTestsFromTestCase(sims_flanagan_hf_test))
     suite.addTest(tl.loadTestsFromTestCase(leg_zoh_test))
     suite.addTest(tl.loadTestsFromTestCase(py_udplas_test))
     suite.addTest(tl.loadTestsFromTestCase(trajopt_mga_tests))
