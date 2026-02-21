@@ -483,3 +483,42 @@ class mit_tests(_ut.TestCase):
         self.assertTrue(float_rel_error(np.linalg.norm(Aik), 3.7165788775706137) < 1e-12)
         self.assertTrue(float_rel_error(np.linalg.norm(Ajk), 5.1268002110392725) < 1e-12)
 
+
+class trajopt_sf_pl2pl_tests(_ut.TestCase):
+    def test_gradient(self):
+        import pykep as pk
+        import pygmo as pg
+
+        # Create a small instance for testing
+        udp = pk.trajopt.sf_pl2pl(
+            nseg=5,
+            with_gradient=True,
+            t0_bounds=[6700.0, 6800.0],
+            tof_bounds=[200.0, 300.0],
+            vinfs=3.0,
+            vinff=0.0,
+        )
+
+        lb, ub = udp.get_bounds()
+        # Use midpoint of bounds as test point
+        x = np.array([(l + u) / 2.0 for l, u in zip(lb, ub)])
+
+        # Get sparsity pattern and analytical gradient
+        sp = udp.gradient_sparsity()
+        ag = udp.gradient(x)
+        self.assertEqual(len(sp), len(ag))
+
+        # Build a full Jacobian from the sparse gradient
+        nf = 1 + udp.get_nec() + udp.get_nic()
+        nx = len(x)
+        J_analytical = np.zeros((nf, nx))
+        for k, (row, col) in enumerate(sp):
+            J_analytical[row, col] = ag[k]
+
+        # Compute numerical gradient using central differences
+        J_numerical_flat = pg.estimate_gradient_h(callable=udp.fitness, x=x)
+        J_numerical = np.array(J_numerical_flat).reshape((nf, nx), order="C")
+
+        # Compare analytical and numerical gradients
+        self.assertTrue(np.allclose(J_analytical, J_numerical, atol=1e-5, rtol=1e-3))
+
