@@ -561,7 +561,7 @@ PYBIND11_MODULE(core, m) // NOLINT
     // Exposing propagators
     m.def(
         "propagate_lagrangian",
-        [](const std::array<std::array<double, 3>, 2> &pos_vel, double dt, double mu, bool request_stm) {
+        [](const std::array<std::array<double, 3>, 2> &pos_vel, double dt, double mu, bool request_stm) -> py::object {
             auto pl_retval = kep3::propagate_lagrangian(pos_vel, dt, mu, request_stm);
             if (pl_retval.second) {
                 // The stm was requested lets transfer ownership to python
