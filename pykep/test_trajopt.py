@@ -522,3 +522,44 @@ class trajopt_sf_pl2pl_tests(_ut.TestCase):
         # Compare analytical and numerical gradients
         self.assertTrue(np.allclose(J_analytical, J_numerical, atol=1e-5, rtol=1e-3))
 
+
+class trajopt_zoh_pl2pl_tests(_ut.TestCase):
+    def test_gradient(self):
+        import pykep as pk
+        import pygmo as pg
+
+        # Build the variational integrators needed for gradients
+        ta = pk.ta.get_zoh_kep(1e-14)
+        ta_var = pk.ta.get_zoh_kep_var(1e-10)
+
+        # Create a small instance for testing
+        udp = pk.trajopt.zoh_pl2pl(
+            nseg=5,
+            tas=(ta, ta_var),
+            time_encoding='uniform',
+            t0_bounds=[6700.0, 6800.0],
+            tof_bounds=[3.4, 8.6],
+            vinf_dep_bounds=[0.0, 0.2],
+            vinf_arr_bounds=[0.0, 0.2],
+        )
+
+        lb, ub = udp.get_bounds()
+        # Use midpoint of bounds as test point; set direction vectors to non-zero
+        x = np.array([(l + u) / 2.0 for l, u in zip(lb, ub)])
+        # Ensure departure and arrival direction vectors are non-zero (they default to midpoint of [-1, 1] = 0)
+        x[3], x[4], x[5] = 1.0 / np.sqrt(3), 1.0 / np.sqrt(3), 1.0 / np.sqrt(3)
+        x[7], x[8], x[9] = 1.0 / np.sqrt(3), 1.0 / np.sqrt(3), 1.0 / np.sqrt(3)
+
+        # Compute analytical gradient (returned as dense, flattened nf×nx matrix)
+        ag = udp.gradient(x)
+        nf = 1 + udp.get_nec()
+        nx = len(x)
+        J_analytical = np.array(ag).reshape((nf, nx), order="C")
+
+        # Compute numerical gradient using central differences
+        J_numerical_flat = pg.estimate_gradient_h(callable=udp.fitness, x=x)
+        J_numerical = np.array(J_numerical_flat).reshape((nf, nx), order="C")
+
+        # Compare analytical and numerical gradients
+        self.assertTrue(np.allclose(J_analytical, J_numerical, atol=1e-5, rtol=1e-3))
+
