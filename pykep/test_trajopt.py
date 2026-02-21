@@ -519,7 +519,65 @@ class trajopt_sf_pl2pl_tests(_ut.TestCase):
         J_numerical_flat = pg.estimate_gradient_h(callable=udp.fitness, x=x)
         J_numerical = np.array(J_numerical_flat).reshape((nf, nx), order="C")
 
-        # Compare analytical and numerical gradients
+        # Compare analytical and numerical gradients (zoh_pl2pl)
+        self.assertTrue(np.allclose(J_analytical, J_numerical, atol=1e-5, rtol=1e-3))
+
+
+class trajopt_zoh_point2point_tests(_ut.TestCase):
+    def test_gradient_uniform(self):
+        import pykep as pk
+        import pygmo as pg
+
+        ta = pk.ta.get_zoh_kep(1e-14)
+        ta_var = pk.ta.get_zoh_kep_var(1e-10)
+
+        udp = pk.trajopt.zoh_point2point(
+            nseg=5,
+            tas=(ta, ta_var),
+            time_encoding='uniform',
+        )
+
+        lb, ub = udp.get_bounds()
+        x = np.array([(l + u) / 2.0 for l, u in zip(lb, ub)])
+
+        # Compute analytical gradient (dense, flattened nf×nx)
+        ag = udp.gradient(x)
+        nf = 1 + udp.get_nec()
+        nx = len(x)
+        J_analytical = np.array(ag).reshape((nf, nx), order="C")
+
+        # Compute numerical gradient
+        J_numerical_flat = pg.estimate_gradient_h(callable=udp.fitness, x=x)
+        J_numerical = np.array(J_numerical_flat).reshape((nf, nx), order="C")
+
+        self.assertTrue(np.allclose(J_analytical, J_numerical, atol=1e-5, rtol=1e-3))
+
+    def test_gradient_softmax(self):
+        import pykep as pk
+        import pygmo as pg
+
+        ta = pk.ta.get_zoh_kep(1e-14)
+        ta_var = pk.ta.get_zoh_kep_var(1e-10)
+
+        udp = pk.trajopt.zoh_point2point(
+            nseg=5,
+            tas=(ta, ta_var),
+            time_encoding='softmax',
+        )
+
+        lb, ub = udp.get_bounds()
+        x = np.array([(l + u) / 2.0 for l, u in zip(lb, ub)])
+
+        # Compute analytical gradient (dense, flattened nf×nx)
+        ag = udp.gradient(x)
+        nf = 1 + udp.get_nec()
+        nx = len(x)
+        J_analytical = np.array(ag).reshape((nf, nx), order="C")
+
+        # Compute numerical gradient
+        J_numerical_flat = pg.estimate_gradient_h(callable=udp.fitness, x=x)
+        J_numerical = np.array(J_numerical_flat).reshape((nf, nx), order="C")
+
         self.assertTrue(np.allclose(J_analytical, J_numerical, atol=1e-5, rtol=1e-3))
 
 
