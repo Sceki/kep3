@@ -19,3 +19,4 @@ doc/_build*
 
 # Stuff
 *DS_Store
+_codeql_detected_source_root
